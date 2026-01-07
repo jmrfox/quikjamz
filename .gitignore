@@ -1,0 +1,12 @@
+*.pdf
+*.pyc
+__pycache__/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+.DS_Store
+*.swp
+*.swo
