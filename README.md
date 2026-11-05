@@ -11,17 +11,38 @@ Being rebuilt from scratch (v0.2).
 | Part | State |
 |---|---|
 | Harmony engine (modes, chord vocabulary tiers, loop generation, colour, key changes) | ✅ working |
-| Sections, form, labels, cues | not started |
+| Knobs, moods, arcs; sections, form, labels, cues; meter | ✅ working |
 | Band, roles, parts | not started |
 | Prompts | not started |
 | Typst sheet renderer | not started |
 | MIDI export (one `.mid`: chords, bass, click tracks) | ✅ working |
-| `quikjamz` CLI | not started |
+| `quikjamz` CLI (text chart, JSON, MIDI) | ✅ working (no band/parts options yet) |
+
+## Generate a jam
+
+```bash
+uv sync
+uv run quikjamz --title "Tuesday" --mood mysterious --key D --mode dorian --seed 42 --midi out/jam.mid
+```
+
+This prints a text chart: a header, an energy curve, the road map, then each section with numbered bars, vibe words, cue and ending. `--midi` writes the whole jam to one `.mid` file, with each section repeated as its cue says. `--json` writes the jam plan.
+
+Options:
+- **Starting point:** `--mood` (calm, happy, sad, energetic, dark, mysterious, triumphant, dreamy, chaotic, hypnotic).
+- **Shape:**
+  - `--arc` (arch, build, slow_burn, collapse, wave, plateau, wander, flat)
+  - `--form` (through, return, ring, mirror, strophic, drift)
+  - `--sections`
+- **Section labels:** `--labels` (letters, glyphs, colors, motion, image).
+- **Knobs** (0–1, these override the mood): `--energy`, `--tension`, `--complexity`, `--brightness`, `--density`, `--harm-adv`, `--rhythm-adv`, `--stability`.
+- **Fixed settings:** `--key`, `--mode`, `--tempo` (quarter-note BPM), `--meter` (e.g. `7/8` or `7/8:3+2+2`).
+- **Output and reproducibility:** `--style jazz`, `--seed`.
+
+Anything you don't set is chosen from the seed.
 
 ## Try the harmony engine
 
 ```bash
-uv sync
 uv run python -m quikjamz.harmony --key D --mode dorian --harm-adv 0.4 --count 6 -v
 ```
 

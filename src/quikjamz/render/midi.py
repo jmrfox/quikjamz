@@ -33,6 +33,7 @@ class MidiSection:
     loop: Loop
     passes: int = 2
     play_ending: bool = True  # add one bar of the loop's final chord after the last pass
+    beat_unit: int = 4  # 4 = quarter-note beats, 8 = eighth-note beats
 
 
 # ------------------------------------------------------------------- voicing
@@ -102,23 +103,35 @@ def bass_note(chord: Chord, tonic_pc: int) -> int:
 # --------------------------------------------------------------------- write
 
 
+def _ticks_per_beat(unit: int) -> int:
+    return TICKS_PER_QUARTER * 4 // unit
+
+
 def _timeline(sections: list[MidiSection], gap_bars: int):
-    """Yield (start_beat, beats, chord, tonic_pc) for every chord in order, plus total beats."""
-    events = []
-    beat = 0
+    """Chord events and bar starts, in ticks.
+
+    Returns (events, bars, total_ticks) where events are (on, off, chord, tonic_pc) and bars
+    are (tick, beats_per_bar, beat_unit) for every bar, so meter changes can be written.
+    """
+    events, bars = [], []
+    tick = 0
     for i, section in enumerate(sections):
         loop = section.loop
+        tpb = _ticks_per_beat(section.beat_unit)
+        bpb = loop.beats_per_bar
         tonic = loop.key.tonic.pc
+        start = tick
         for _ in range(section.passes):
             for event in loop.events:
-                events.append((beat, event.beats, event.chord, tonic))
-                beat += event.beats
+                events.append((tick, tick + event.beats * tpb, event.chord, tonic))
+                tick += event.beats * tpb
         if section.play_ending:
-            events.append((beat, loop.beats_per_bar, loop.final, tonic))
-            beat += loop.beats_per_bar
+            events.append((tick, tick + bpb * tpb, loop.final, tonic))
+            tick += bpb * tpb
         if i < len(sections) - 1:
-            beat += gap_bars * loop.beats_per_bar
-    return events, beat
+            tick += gap_bars * bpb * tpb
+        bars += [(t, bpb, section.beat_unit) for t in range(start, tick, bpb * tpb)]
+    return events, bars, tick
 
 
 def _to_track(name: str, messages: list[tuple[int, mido.Message]]) -> mido.MidiTrack:
@@ -136,39 +149,34 @@ def write_midi(
     path: str | Path,
     sections: list[MidiSection],
     *,
-    tempo: float = 100,
-    beat_unit: int = 4,
+    quarter_bpm: float = 100,
     click: bool = True,
     gap_bars: int = 1,
 ) -> Path:
     """Write all sections, one after another, to a single .mid file.
 
-    `tempo` is in beats per minute of the `beat_unit` (4 = quarter, 8 = eighth), so 7/8 at
-    tempo 200 means 200 eighth notes a minute.
+    Tempo is in quarter notes per minute; a section in 7/8 at quarter_bpm 105 has
+    210 eighth-note beats a minute. Each section can have its own meter.
     """
     if not sections:
         raise ValueError("Nothing to write")
     path = Path(path)
-    beats_per_bar = sections[0].loop.beats_per_bar
-    ticks_per_beat = TICKS_PER_QUARTER * 4 // beat_unit
-    events, total_beats = _timeline(sections, gap_bars)
+    events, bars, total_ticks = _timeline(sections, gap_bars)
 
-    meta = mido.MidiTrack(
-        [
-            mido.MetaMessage("track_name", name="QuikJamz", time=0),
-            mido.MetaMessage("set_tempo", tempo=round(60_000_000 / tempo * beat_unit / 4), time=0),
-            mido.MetaMessage(
-                "time_signature", numerator=beats_per_bar, denominator=beat_unit, time=0
-            ),
-            mido.MetaMessage("end_of_track", time=total_beats * ticks_per_beat),
-        ]
-    )
+    meta_msgs = [(0, mido.MetaMessage("set_tempo", tempo=round(60_000_000 / quarter_bpm)))]
+    current = None
+    for tick, bpb, unit in bars:
+        if (bpb, unit) != current:
+            meta_msgs.append((tick, mido.MetaMessage("time_signature", numerator=bpb, denominator=unit)))
+            current = (bpb, unit)
+    meta = _to_track("QuikJamz", meta_msgs)
+    meta.append(mido.MetaMessage("end_of_track", time=total_ticks - sum(m.time for m in meta)))
 
     chord_msgs = [(0, mido.Message("program_change", channel=CHORD_CHANNEL, program=CHORD_PROGRAM))]
     bass_msgs = [(0, mido.Message("program_change", channel=BASS_CHANNEL, program=BASS_PROGRAM))]
     previous = None
-    for start, beats, chord, tonic in events:
-        on, off = start * ticks_per_beat, (start + beats) * ticks_per_beat - 1
+    for on, end, chord, tonic in events:
+        off = end - 1
         notes = voice(_chord_pcs(chord, tonic), previous)
         previous = notes
         for n in notes:
@@ -183,15 +191,27 @@ def write_midi(
 
     if click:
         click_msgs = []
-        for beat in range(total_beats):
-            accent = beat % beats_per_bar == 0
-            note = CLICK_ACCENT if accent else CLICK_BEAT
-            tick = beat * ticks_per_beat
-            vel = 100 if accent else 60
-            click_msgs.append((tick, mido.Message("note_on", channel=CLICK_CHANNEL, note=note, velocity=vel)))
-            click_msgs.append((tick + ticks_per_beat // 4, mido.Message("note_off", channel=CLICK_CHANNEL, note=note)))
+        for bar_tick, bpb, unit in bars:
+            tpb = _ticks_per_beat(unit)
+            for beat in range(bpb):
+                accent = beat == 0
+                note = CLICK_ACCENT if accent else CLICK_BEAT
+                tick = bar_tick + beat * tpb
+                vel = 100 if accent else 60
+                click_msgs.append((tick, mido.Message("note_on", channel=CLICK_CHANNEL, note=note, velocity=vel)))
+                click_msgs.append((tick + tpb // 4, mido.Message("note_off", channel=CLICK_CHANNEL, note=note)))
         midi.tracks.append(_to_track("click", click_msgs))
 
     path.parent.mkdir(parents=True, exist_ok=True)
     midi.save(path)
     return path
+
+
+def jam_to_midi(jam, path: str | Path, *, click: bool = True) -> Path:
+    """Write a whole Jam: sections back to back, each repeated as its cue says."""
+    last = len(jam.sections) - 1
+    sections = [
+        MidiSection(s.loop, passes=s.cue.passes, play_ending=i == last, beat_unit=s.meter.unit)
+        for i, s in enumerate(jam.sections)
+    ]
+    return write_midi(path, sections, quarter_bpm=jam.tempo, click=click, gap_bars=0)

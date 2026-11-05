@@ -160,6 +160,15 @@ Each section has a `loop_bars` (1, 2, 4, 8) and a **cue**:
 
 The first section may have a `start` cue (`count in`, `drone first, others join`).
 
+*As built (v0.2):*
+- **Signal cues** are role-neutral ("after a fill", "at a nod from the spotlight", "when the low end drops out"), so they work for any band.
+- **Count cues** aim for 8 or 16 bars of playing.
+- **In the MIDI,** open and signal sections play 2 passes, and sections run straight into each other.
+- **Returns** keep the original chords exactly, so the band recognises them. Only the ending (resolve or hang) is picked again, using the returning section's own tension.
+- **Drift sections** get their own label and change one chord of the previous loop. A one-chord vamp gains a second chord instead.
+- **Tempo:** when it comes from energy and the meter is in eighths, it's scaled by 0.75 so the counted pulse stays playable.
+- **Spelling:** double sharps and flats are respelled for readability (Bbb → A).
+
 ### 3.3 Labels
 
 The label style is chosen by the user and defaults to **letters**. Labels must never suggest pop form (no verse, chorus, bridge).

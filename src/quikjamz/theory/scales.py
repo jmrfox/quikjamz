@@ -133,8 +133,16 @@ class Key:
         return self.tonic.fifths - self.scale.signature_offset
 
     def note(self, degree: int, alteration: int = 0) -> SpelledNote:
-        """Spell a scale degree (measured against the major scale on the tonic)."""
-        return self.tonic.step(degree - 1, MAJOR_STEPS[degree - 1] + alteration)
+        """Spell a scale degree (measured against the major scale on the tonic).
+
+        Double sharps/flats are respelled (Bbb -> A): theoretically correct, but hard to
+        read at a glance on a jam sheet.
+        """
+        note = self.tonic.step(degree - 1, MAJOR_STEPS[degree - 1] + alteration)
+        if abs(note.accidental) < 2:
+            return note
+        options = spellings_of(note.pc)
+        return min(options, key=lambda n: (abs(n.accidental), n.accidental * note.accidental < 0))
 
     def scale_notes(self) -> list[SpelledNote]:
         return [self.note(*self.scale.degree_of_step(s)) for s in range(1, 8)]

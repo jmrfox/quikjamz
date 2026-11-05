@@ -76,9 +76,8 @@ def main(argv: list[str] | None = None) -> None:
 
         path = write_midi(
             args.midi,
-            [MidiSection(loop, passes=args.passes) for loop in loops],
-            tempo=args.tempo,
-            beat_unit=args.beat_unit,
+            [MidiSection(loop, passes=args.passes, beat_unit=args.beat_unit) for loop in loops],
+            quarter_bpm=args.tempo * 4 / args.beat_unit,
             click=not args.no_click,
         )
         print(f"MIDI written to {path}  ({len(loops)} loops x {args.passes} passes, "

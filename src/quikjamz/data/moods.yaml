@@ -1,0 +1,11 @@
+# Mood presets: starting knob values (spec 2.4). Any knob can be overridden. Tunable.
+calm:       {energy: 0.25, tension: 0.20, complexity: 0.35, brightness: 0.60, density: 0.25, harm_adv: 0.25, rhythm_adv: 0.15, stability: 0.80}
+happy:      {energy: 0.65, tension: 0.25, complexity: 0.40, brightness: 0.85, density: 0.55, harm_adv: 0.25, rhythm_adv: 0.30, stability: 0.70}
+sad:        {energy: 0.30, tension: 0.45, complexity: 0.45, brightness: 0.30, density: 0.30, harm_adv: 0.35, rhythm_adv: 0.20, stability: 0.70}
+energetic:  {energy: 0.85, tension: 0.50, complexity: 0.40, brightness: 0.65, density: 0.80, harm_adv: 0.35, rhythm_adv: 0.45, stability: 0.55}
+dark:       {energy: 0.50, tension: 0.65, complexity: 0.45, brightness: 0.15, density: 0.45, harm_adv: 0.50, rhythm_adv: 0.40, stability: 0.60}
+mysterious: {energy: 0.35, tension: 0.60, complexity: 0.55, brightness: 0.40, density: 0.30, harm_adv: 0.65, rhythm_adv: 0.50, stability: 0.50}
+triumphant: {energy: 0.85, tension: 0.35, complexity: 0.45, brightness: 0.80, density: 0.65, harm_adv: 0.30, rhythm_adv: 0.25, stability: 0.65}
+dreamy:     {energy: 0.30, tension: 0.35, complexity: 0.65, brightness: 0.75, density: 0.30, harm_adv: 0.55, rhythm_adv: 0.30, stability: 0.60}
+chaotic:    {energy: 0.80, tension: 0.80, complexity: 0.70, brightness: 0.45, density: 0.85, harm_adv: 0.90, rhythm_adv: 0.90, stability: 0.15}
+hypnotic:   {energy: 0.50, tension: 0.30, complexity: 0.15, brightness: 0.50, density: 0.55, harm_adv: 0.15, rhythm_adv: 0.35, stability: 0.95}

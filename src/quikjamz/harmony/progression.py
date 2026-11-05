@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from ..theory.chords import Chord, degree_for
 from ..theory.scales import Key
@@ -65,6 +65,7 @@ class Loop:
     final: Chord  # the chord the section ends on
     surprise: float
     target: float
+    tonic: Chord | None = None  # the (coloured) home chord, used for 'resolve' endings
     stats: dict = field(default_factory=dict)
 
     @property
@@ -285,13 +286,7 @@ def generate_loop(
     plain_tonic = next(c for c in pool if c.source == "diatonic" and c.degree == 1)
     in_loop = [c for c, raw in zip(colored, best) if raw.ident == plain_tonic.ident]
     tonic = in_loop[0] if in_loop else colorize(plain_tonic, complexity, tension, rng)
-    # On the last pass, either land on home or hang on the last chord that isn't home.
-    unresolved = [c for c in reversed(colored) if c.fn != "H"]
-    if unresolved and rng.random() < tension:
-        ending, final = "hang", unresolved[0]
-    else:
-        ending, final = "resolve", tonic
-
+    ending, final = pick_ending(colored, tonic, tension, rng)
     return Loop(
         key=key,
         beats_per_bar=beats_per_bar,
@@ -300,5 +295,61 @@ def generate_loop(
         final=final,
         surprise=best_stats["surprise"],
         target=target,
+        tonic=tonic,
         stats={**best_stats, "score": best_score, "n_target": n},
+    )
+
+
+def pick_ending(chords: list[Chord], tonic: Chord, tension: float, rng: random.Random):
+    """On the last pass, either land on home or hang on the last chord that isn't home."""
+    unresolved = [c for c in reversed(chords) if c.fn != "H"]
+    if unresolved and rng.random() < tension:
+        return "hang", unresolved[0]
+    return "resolve", tonic
+
+
+def reend_loop(loop: Loop, tension: float, rng: random.Random) -> Loop:
+    """The same loop with its ending picked again (for a returning section at a new tension)."""
+    ending, final = pick_ending(loop.chords, loop.tonic or loop.chords[0], tension, rng)
+    return replace(loop, ending=ending, final=final)
+
+
+def vary_loop(
+    loop: Loop,
+    rng: random.Random,
+    *,
+    harm_adv: float = 0.3,
+    complexity: float = 0.5,
+    tension: float = 0.5,
+    brightness: float | None = None,
+) -> Loop:
+    """Change one chord of a loop (spec 3.1 'drift'). A one-chord vamp grows a second chord."""
+    pool = build_pool(loop.key, brightness)
+    chords = loop.chords
+    if len(chords) == 1:
+        vamp = chords[0]
+        options = [c for c in pool + _planing_moves(vamp) if c.ident != vamp.ident]
+        weights = [transition_weight(vamp, c, harm_adv) * _wrap_factor(c, vamp, tension) for c in options]
+        added = colorize(_choose(rng, options, weights) or vamp, complexity, tension, rng)
+        beats = loop.events[0].beats
+        first = beats // 2 if beats >= 2 * loop.beats_per_bar else beats
+        events = [ChordEvent(vamp, first), ChordEvent(added, beats - first if first < beats else beats)]
+    else:
+        idx = rng.randrange(1, len(chords))
+        prev, nxt = chords[idx - 1], chords[(idx + 1) % len(chords)]
+        taken = {c.ident for c in chords}
+        options = [c for c in pool + _planing_moves(prev) if c.ident not in taken]
+        weights = [
+            transition_weight(prev, c, harm_adv) * max(transition_weight(c, nxt, harm_adv), 1e-3) ** 0.5
+            for c in options
+        ]
+        new_chord = _choose(rng, options, weights)
+        events = list(loop.events)
+        if new_chord is not None:
+            events[idx] = ChordEvent(colorize(new_chord, complexity, tension, rng), events[idx].beats)
+    new_chords = [e.chord for e in events]
+    ending, final = pick_ending(new_chords, loop.tonic or new_chords[0], tension, rng)
+    return replace(
+        loop, events=events, ending=ending, final=final,
+        surprise=surprise(new_chords, pool), target=target_surprise(harm_adv),
     )

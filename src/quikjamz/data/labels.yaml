@@ -1,0 +1,43 @@
+# Section label vocabularies (spec 3.3). None of these suggest pop form.
+
+glyphs: ["○", "△", "□", "◇", "☆", "⬡", "▽", "✕"]
+
+colors: [Blue, Amber, Green, Rose, Slate, Violet, Ochre, Teal]
+
+# Motion words, by where the section sits on the energy arc. The first unused word is taken.
+motion:
+  open: [Open, Begin, Wake]
+  gather: [Gather, Rise, Lift, Climb]
+  surge: [Surge, Push, Swell, Charge]
+  blaze: [Blaze, Flare, Crest]
+  hold: [Hold, Ride, Churn]
+  thin: [Thin, Ebb, Settle, Fall]
+  drift: [Drift, Float, Hover, Linger]
+  close: [Close, Fade, Rest]
+
+# Image words, each fitting a range of knob values. Unlisted knobs fit anything.
+image:
+  - {word: Fog,      energy: [0.0, 0.45], brightness: [0.0, 0.55]}
+  - {word: Ember,    energy: [0.2, 0.6],  brightness: [0.0, 0.5]}
+  - {word: Glass,    energy: [0.0, 0.5],  brightness: [0.5, 1.0]}
+  - {word: Dawn,     energy: [0.1, 0.5],  brightness: [0.6, 1.0]}
+  - {word: Tide,     energy: [0.3, 0.7]}
+  - {word: Engine,   energy: [0.6, 1.0],  density: [0.5, 1.0]}
+  - {word: Static,   tension: [0.6, 1.0], density: [0.5, 1.0]}
+  - {word: Orbit,    tension: [0.0, 0.5],  energy: [0.3, 0.7]}
+  - {word: Thunder,  energy: [0.75, 1.0], brightness: [0.0, 0.5]}
+  - {word: Sunburst, energy: [0.7, 1.0],  brightness: [0.6, 1.0]}
+  - {word: Moss,     energy: [0.0, 0.4],  tension: [0.0, 0.4]}
+  - {word: Smoke,    energy: [0.0, 0.5],  tension: [0.4, 1.0]}
+  - {word: Wire,     tension: [0.6, 1.0], brightness: [0.4, 1.0]}
+  - {word: Riverbed, energy: [0.2, 0.55], density: [0.0, 0.5]}
+  - {word: Lantern,  energy: [0.1, 0.5],  brightness: [0.5, 1.0]}
+  - {word: Iron,     energy: [0.6, 1.0],  brightness: [0.0, 0.45]}
+  - {word: Swarm,    density: [0.7, 1.0], complexity: [0.5, 1.0]}
+  - {word: Salt,     brightness: [0.4, 0.8]}
+  - {word: Cathedral, energy: [0.4, 0.9], complexity: [0.5, 1.0]}
+  - {word: Desert,   density: [0.0, 0.4],  brightness: [0.5, 1.0]}
+  - {word: Midnight, brightness: [0.0, 0.35]}
+  - {word: Kite,     energy: [0.4, 0.8],  brightness: [0.6, 1.0]}
+  - {word: Quarry,   energy: [0.5, 0.9],  density: [0.3, 0.7]}
+  - {word: Pulse,    density: [0.4, 0.8]}

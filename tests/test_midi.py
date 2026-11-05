@@ -38,8 +38,8 @@ def test_no_click_track_when_disabled(tmp_path):
 @pytest.mark.parametrize("beats, unit, tempo", [(4, 4, 120), (7, 8, 210), (3, 4, 90)])
 def test_tempo_meter_and_length(tmp_path, beats, unit, tempo):
     loops = make_loops(2, beats=beats)
-    sections = [MidiSection(l, passes=2) for l in loops]
-    path = write_midi(tmp_path / "jam.mid", sections, tempo=tempo, beat_unit=unit, gap_bars=1)
+    sections = [MidiSection(l, passes=2, beat_unit=unit) for l in loops]
+    path = write_midi(tmp_path / "jam.mid", sections, quarter_bpm=tempo * 4 / unit, gap_bars=1)
     midi = mido.MidiFile(path)
     meta = {m.type: m for m in midi.tracks[0]}
     assert meta["time_signature"].numerator == beats
