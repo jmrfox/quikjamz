@@ -128,8 +128,9 @@ def _timeline(sections: list[MidiSection], gap_bars: int):
         start = tick
         for _ in range(section.passes):
             for event in loop.events:
-                events.append((tick, tick + event.beats * tpb, event.chord, tonic))
-                tick += event.beats * tpb
+                length = round(event.beats * tpb)
+                events.append((tick, tick + length, event.chord, tonic))
+                tick += length
         if section.play_ending:
             events.append((tick, tick + bpb * tpb, loop.final, tonic))
             tick += bpb * tpb

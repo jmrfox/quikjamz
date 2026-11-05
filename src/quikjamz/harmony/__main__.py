@@ -10,19 +10,16 @@ import argparse
 import random
 import sys
 
+from ..theory.meter import Meter
 from ..theory.scales import choose_mode, get_scale, make_key
 from .progression import Loop, generate_loop
 
 
 def format_bars(loop: Loop, style: str) -> str:
-    """'| Dm7 . | G7 . |' style chart, one cell per bar, '/' where a chord is held."""
-    bpb = loop.beats_per_bar
-    bars: list[list[str]] = [[] for _ in range(loop.bars)]
-    beat = 0
-    for event in loop.events:
-        bars[beat // bpb].append(event.chord.symbol(loop.key, style))
-        beat += event.beats
-    cells = [" ".join(chords) if chords else "/" for chords in bars]
+    """'| Dm7 | G7@3 |' chart, one cell per bar, '/' where a chord is held."""
+    from ..render.text import bar_cells
+
+    cells = bar_cells(loop, loop.key, style)
     width = max(len(c) for c in cells)
     return "| " + " | ".join(c.ljust(width) for c in cells) + " |"
 
@@ -35,6 +32,7 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--complexity", type=float, default=0.5)
     p.add_argument("--tension", type=float, default=0.5)
     p.add_argument("--brightness", type=float, default=0.5)
+    p.add_argument("--rhythm-adv", type=float, default=0.0, help="moves chord changes off the barline")
     p.add_argument("--beats", type=int, default=4, help="beats per bar")
     p.add_argument("--count", type=int, default=6)
     p.add_argument("--seed", type=int, default=None)
@@ -61,7 +59,8 @@ def main(argv: list[str] | None = None) -> None:
         loop = generate_loop(
             key, rng,
             harm_adv=args.harm_adv, complexity=args.complexity, tension=args.tension,
-            brightness=args.brightness, beats_per_bar=args.beats,
+            brightness=args.brightness, meter=Meter(args.beats, args.beat_unit) if args.beat_unit != 2 else None,
+            beats_per_bar=args.beats, rhythm_adv=args.rhythm_adv,
         )
         end = "→ home" if loop.ending == "resolve" else f"→ hang on {loop.final.symbol(key, args.style)}"
         print(f"{format_bars(loop, args.style)}   {end}")

@@ -185,7 +185,7 @@ def generate_jam(config: JamConfig) -> Jam:
                     sec_meter = choose_meter(sk.rhythm_adv, rng)
             loop = generate_loop(
                 key, rng, harm_adv=sk.harm_adv, complexity=sk.complexity, tension=sk.tension,
-                brightness=sk.brightness, beats_per_bar=sec_meter.beats,
+                brightness=sk.brightness, meter=sec_meter, rhythm_adv=sk.rhythm_adv,
             )
         cue = make_cue(sk, loop.bars, is_last, loop.ending, rng)
         start_cue = make_start_cue(sk, rng) if i == 0 else None

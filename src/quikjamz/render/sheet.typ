@@ -11,7 +11,11 @@
 #set page(
   paper: paper,
   margin: (x: 0.55in, top: 0.5in, bottom: 0.6in),
-  footer: align(right, text(7pt, fill: soft, data.footer)),
+  footer: grid(
+    columns: (1fr, auto),
+    text(7pt, fill: soft, data.legend),
+    text(7pt, fill: soft, data.footer),
+  ),
 )
 #set text(
   font: ("Segoe UI", "Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans", "Libertinus Serif"),
@@ -51,11 +55,16 @@
 
 // --------------------------------------------------------------- sections
 
-#let chord-text(c) = {
-  text(13pt, weight: "semibold", c.root)
-  text(if c.suffix.clusters().len() > 6 { 8pt } else { 10pt }, c.suffix)
-  if c.bass != none { text(12pt, [/#c.bass]) }
+#let chord-text(c, small: false) = {
+  let big = if small { 11.5pt } else { 13pt }
+  let suffix-size = if c.suffix.clusters().len() > 6 or small { 8.5pt } else { 10pt }
+  if c.at("push", default: false) { text(11pt, fill: accent, weight: "bold", "›") }
+  text(big, weight: "semibold", c.root)
+  text(suffix-size, c.suffix)
+  if c.bass != none { text(big - 1pt, [/#c.bass]) }
 }
+
+#let slash = text(10pt, fill: soft, "/")
 
 #let bar-cell(b, first, last) = box(
   width: 100%,
@@ -69,7 +78,12 @@
 )[
   #place(top + left, dx: -2pt, dy: 1.5pt, text(5pt, fill: soft, str(b.n)))
   #align(horizon)[
-    #if b.chords.len() == 0 {
+    #if b.slots != none {
+      for (i, s) in b.slots.enumerate() {
+        if i > 0 { h(if s.group { 11pt } else { 4pt }) }
+        if s.chord == none { slash } else { chord-text(s.chord, small: true) }
+      }
+    } else if b.chords.len() == 0 {
       text(11pt, fill: faint, "%")
     } else {
       b.chords.map(chord-text).join(h(6pt))
@@ -94,12 +108,12 @@
     let n = s.bars.len()
     let body = {
       grid(
-        columns: (1fr,) * data.bars_per_row,
+        columns: (1fr,) * s.bars_per_row,
         row-gutter: 4pt,
         ..s.bars.enumerate().map(((i, b)) => bar-cell(
           b,
-          calc.rem(i, data.bars_per_row) == 0,
-          i == n - 1 or calc.rem(i + 1, data.bars_per_row) == 0,
+          calc.rem(i, s.bars_per_row) == 0,
+          i == n - 1 or calc.rem(i + 1, s.bars_per_row) == 0,
         )),
       )
       v(1pt)

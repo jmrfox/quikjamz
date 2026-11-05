@@ -37,7 +37,7 @@ Options:
   - `--form` (through, return, ring, mirror, strophic, drift)
   - `--sections`
 - **Section labels:** `--labels` (letters, glyphs, colors, motion, image).
-- **Knobs** (0–1, these override the mood): `--energy`, `--tension`, `--complexity`, `--brightness`, `--density`, `--harm-adv`, `--rhythm-adv`, `--stability`.
+- **Knobs** (0–1, these override the mood): `--energy`, `--tension`, `--complexity`, `--brightness`, `--density`, `--harm-adv`, `--rhythm-adv`, `--stability`. Complexity sets how often chords change. `--rhythm-adv` sets where they land: barlines and strong beats when low, any beat in the middle, pushes (an eighth early) when high.
 - **Fixed settings:** `--key`, `--mode`, `--tempo` (quarter-note BPM), `--meter` (e.g. `7/8` or `7/8:3+2+2`).
 - **Output and reproducibility:** `--style jazz`, `--seed`.
 

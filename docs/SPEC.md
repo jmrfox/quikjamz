@@ -276,6 +276,13 @@ This makes "adventurous" something we can measure and test, instead of just a fe
    | A | 0.15 | 0.3 | 0.55 |
    | P | 0.7 | 0.2 | 0.1 |
 
+   **Where changes land (as built in v0.2):** complexity sets *how often* chords change. `rhythm_adv` sets *where* in the bar they land (`harmony/rhythm.py`):
+   - **Strong points:** the meter's natural landing spots, which are its group boundaries. That's beat 3 of 4/4, beat 4 of 5/4 (3+2), eighths 3 and 5 of 7/8 (2+2+3), and the dotted-quarter pulses of 6/8 and 12/8.
+   - **Moving a change:** each change point (never the loop's first chord) moves with probability 0.08 + 0.45·r. It moves to a nearby barline (weight 1), strong point (0.7) or other beat (0.6·r, ×0.4 in /8 meters), preferring spots within about half a bar.
+   - **Pushes:** above r = 0.45, a change on a barline or strong point may be *pushed* an eighth early, with probability 0.8·(r − 0.45).
+   - **Limits:** chords last at least a beat (two eighths in /8), and the loop length never changes.
+   - **Measured spread (4/4, complexity 0.6):** at r = 0, 91% of changes are on barlines and the rest on strong points. At r = 0.9, about 33% are on barlines, 25% are pushes, and the rest land on other beats.
+
 4. **Wrap-around:** the loop's last chord should lead back into its first chord, so it repeats naturally. At low tension, prefer **P → H** at the end.
 5. **Resolution (tension):**
    - On the section's final pass, end on home with probability `1 − tension`.
@@ -485,6 +492,8 @@ The goal is **one page per sheet** for a normal-length jam (up to ~8 sections), 
 *As built (v0.2):*
 - **Section labels** sit in a left column, sized to fit the longest label, with the count cue (`×4`) under the label.
 - **Bars** run 8 to a row at a fixed width, so a section's length on the page shows how long it is. Each bar has a tiny bar number in its top-left corner, and a held bar shows a faint `%`.
+- **Mid-bar changes** use real-book slash notation, with one `/` per beat (per eighth in /8). Slashes are spaced by the meter's grouping, and a pushed chord gets an accent-coloured `›`. Example: `/ / / ›E♭m` puts E♭m on the "and" of 4. A section with any mid-bar change drops to 4 bars per row to make room. The footer explains `/` and `›` when they appear.
+- **Text chart:** the same information as `G@3` and `›E♭m@4&`.
 - **Text lines:** line 1 is the key or meter change, return or drift note (in the accent colour), then vibe words, the cue and the last-pass ending. Line 2 is the prompts plus any seed idea.
 - **Seed ideas:** rhythm ideas print as ● (hit) and · (rest), grouped by beat or by the meter's grouping.
 - **Accidentals** are real ♭ and ♯ throughout.

@@ -43,13 +43,38 @@ def _cue_short(section: Section) -> str:
 
 
 def _bars(section: Section, style: str) -> list[dict]:
+    """Bar cells.
+
+    A bar where every chord starts on beat 1 is just its chord (or '%' when held).
+    A bar with a mid-bar change gets `slots`, one per beat in real-book slash
+    notation: `C / / G` puts G on beat 4. A chord on an off-beat (a push) sits in
+    the slot of the beat it follows and is marked `push`.
+    """
+    from ..harmony.rhythm import strong_points
+
     loop = section.loop
     bpb = loop.beats_per_bar
-    cells = [{"n": section.start_bar + i, "chords": []} for i in range(loop.bars)]
-    beat = 0
-    for event in loop.events:
-        cells[beat // bpb]["chords"].append(chord_display(event.chord, section.key, style))
-        beat += event.beats
+    groups = set(strong_points(section.meter))
+    starts_by_bar: dict[int, list[tuple[float, dict]]] = {}
+    for event, start in zip(loop.events, loop.starts()):
+        bar, pos = int(start // bpb), start % bpb
+        chord = chord_display(event.chord, section.key, style)
+        chord["push"] = event.push or pos != int(pos)
+        starts_by_bar.setdefault(bar, []).append((pos, chord))
+
+    cells = []
+    for i in range(loop.bars):
+        entries = starts_by_bar.get(i, [])
+        cell = {"n": section.start_bar + i, "chords": [c for _, c in entries], "slots": None}
+        if any(pos for pos, _ in entries):
+            slots = []
+            for beat in range(bpb):
+                here = [c for pos, c in entries if beat <= pos < beat + 1]
+                group = beat in groups  # a wider gap before each beat group (2+2+3, ...)
+                for j, c in enumerate(here or [None]):
+                    slots.append({"chord": c, "group": group and j == 0})
+            cell["slots"] = slots
+        cells.append(cell)
     return cells
 
 
@@ -81,6 +106,17 @@ def _line(section: Section, style: str) -> str:
     return " · ".join(parts)
 
 
+def _legend(jam: Jam) -> str:
+    events = [(e, st) for s in jam.sections for e, st in zip(s.loop.events, s.loop.starts())]
+    parts = []
+    if any(st % s_bpb for s in jam.sections for st in s.loop.starts() for s_bpb in [s.loop.beats_per_bar]):
+        eighths = any(s.meter.unit == 8 for s in jam.sections)
+        parts.append("/ = one beat" + (", an eighth in /8" if eighths else "") + " (C / / G: G on beat 4)")
+    if any(e.push for e, _ in events):
+        parts.append("› pushed: arrives an eighth early")
+    return " · ".join(parts)
+
+
 def sheet_data(jam: Jam, style: str = "plain") -> dict:
     tempo = f"♪ = {jam.tempo * 2}" if jam.meter.unit == 8 else f"♩ = {jam.tempo}"
     sections = []
@@ -90,7 +126,9 @@ def sheet_data(jam: Jam, style: str = "plain") -> dict:
                 "label": s.label,
                 "cue": s.cue.text if s.cue.type == "count" else "",
                 "notes": _notes(jam, s),
-                "bars": _bars(s, style),
+                "bars": (bars := _bars(s, style)),
+                # Bars with mid-bar changes need room for their slashes.
+                "bars_per_row": 4 if any(b["slots"] for b in bars) else BARS_PER_ROW,
                 "line": _line(s, style),
                 "prompts": s.prompts,
                 "idea": {**s.idea, "text": pretty(s.idea["text"])} if s.idea else None,
@@ -112,8 +150,8 @@ def sheet_data(jam: Jam, style: str = "plain") -> dict:
         "key": key_display(jam.home_key),
         "roadmap": roadmap,
         "sections": sections,
-        "bars_per_row": BARS_PER_ROW,
         "footer": f"seed {jam.seed} · mood {jam.mood} · arc {jam.arc} · form {jam.form}",
+        "legend": _legend(jam),
     }
 
 

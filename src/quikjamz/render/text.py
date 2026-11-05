@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from ..harmony.progression import Loop
 from ..jam import Jam, Section
+from ..theory.scales import Key
 
 SPARK = "▁▂▃▄▅▆▇█"
 
@@ -22,15 +24,30 @@ def _cue_short(section: Section) -> str:
     return f"{section.label} (cue)"
 
 
-def _bars(section: Section, style: str) -> list[str]:
-    loop = section.loop
+def beat_name(pos_in_bar: float) -> str:
+    """0 -> '1', 2 -> '3', 3.5 -> '4&'."""
+    whole = int(pos_in_bar)
+    return f"{whole + 1}" + ("&" if pos_in_bar - whole else "")
+
+
+def bar_cells(loop: Loop, key: Key, style: str = "plain") -> list[str]:
+    """One text cell per bar. Chords not on beat 1 show where they land ('G@3');
+    pushed chords are marked '›' ('›G@4&' = G arrives on the and of 4)."""
     bpb = loop.beats_per_bar
     cells: list[list[str]] = [[] for _ in range(loop.bars)]
-    beat = 0
-    for event in loop.events:
-        cells[beat // bpb].append(event.chord.symbol(section.key, style))
-        beat += event.beats
+    for event, start in zip(loop.events, loop.starts()):
+        bar, pos = int(start // bpb), start % bpb
+        text = event.chord.symbol(key, style)
+        if pos:
+            text += "@" + beat_name(pos)
+        if event.push:
+            text = "›" + text
+        cells[bar].append(text)
     return [" ".join(c) if c else "/" for c in cells]
+
+
+def _bars(section: Section, style: str) -> list[str]:
+    return bar_cells(section.loop, section.key, style)
 
 
 def render_text(jam: Jam, style: str = "plain", width: int = 72) -> str:
@@ -84,5 +101,7 @@ def render_text(jam: Jam, style: str = "plain", width: int = 72) -> str:
             lines.append("  » " + " · ".join(extras))
         lines.append("")
 
+    if any(e.push for s in jam.sections for e in s.loop.events):
+        lines.append("@3 = chord lands on beat 3 · › = pushed, arrives an eighth early")
     lines.append(f"seed {jam.seed} · mood {jam.mood} · arc {jam.arc} · form {jam.form}".rjust(width))
     return "\n".join(lines)

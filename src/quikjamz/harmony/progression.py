@@ -14,8 +14,10 @@ import random
 from dataclasses import dataclass, field, replace
 
 from ..theory.chords import Chord, degree_for
+from ..theory.meter import Meter
 from ..theory.scales import Key
 from .color import colorize
+from .rhythm import place_changes
 from .vocabulary import build_pool
 
 # Base weights for moving between functions (rows: from, columns: to). Tunable.
@@ -53,7 +55,8 @@ def target_surprise(harm_adv: float) -> float:
 @dataclass(frozen=True)
 class ChordEvent:
     chord: Chord
-    beats: int
+    beats: float  # may be fractional when a change is pushed by an eighth
+    push: bool = False  # arrives an eighth early, ahead of a barline or strong point
 
 
 @dataclass
@@ -70,7 +73,15 @@ class Loop:
 
     @property
     def bars(self) -> int:
-        return sum(e.beats for e in self.events) // self.beats_per_bar
+        return round(sum(e.beats for e in self.events)) // self.beats_per_bar
+
+    def starts(self) -> list[float]:
+        """Start of each chord, in beats from the top of the loop."""
+        out, beat = [], 0.0
+        for e in self.events:
+            out.append(beat)
+            beat += e.beats
+        return out
 
     @property
     def chords(self) -> list[Chord]:
@@ -254,9 +265,16 @@ def generate_loop(
     tension: float = 0.5,
     brightness: float | None = None,
     beats_per_bar: int = 4,
+    meter: Meter | None = None,
+    rhythm_adv: float = 0.0,
     n_chords: int | None = None,
     candidates: int = CANDIDATES,
 ) -> Loop:
+    """A chord loop for one section. `meter` (if given) overrides beats_per_bar and lets
+    rhythm_adv move chord changes off the barline (see rhythm.py)."""
+    if meter is None:
+        meter = Meter(beats_per_bar)
+    beats_per_bar = meter.beats
     pool = build_pool(key, brightness)
     if n_chords is None:
         n_chords = round(1 + complexity * 4 + rng.gauss(0, 0.6))
@@ -280,8 +298,9 @@ def generate_loop(
             best, best_score, best_stats = seq, score, {"surprise": s, "voice_leading": vl}
 
     durations = plan_durations(len(best), complexity, beats_per_bar, rng)
+    placed, pushed = place_changes(durations, meter, rhythm_adv, rng)
     colored = [colorize(c, complexity, tension, rng) for c in best]
-    events = [ChordEvent(c, d) for c, d in zip(colored, durations)]
+    events = [ChordEvent(c, d, p) for c, d, p in zip(colored, placed, pushed)]
 
     plain_tonic = next(c for c in pool if c.source == "diatonic" and c.degree == 1)
     in_loop = [c for c, raw in zip(colored, best) if raw.ident == plain_tonic.ident]
@@ -346,7 +365,8 @@ def vary_loop(
         new_chord = _choose(rng, options, weights)
         events = list(loop.events)
         if new_chord is not None:
-            events[idx] = ChordEvent(colorize(new_chord, complexity, tension, rng), events[idx].beats)
+            old = events[idx]
+            events[idx] = ChordEvent(colorize(new_chord, complexity, tension, rng), old.beats, old.push)
     new_chords = [e.chord for e in events]
     ending, final = pick_ending(new_chords, loop.tonic or new_chords[0], tension, rng)
     return replace(
