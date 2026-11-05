@@ -78,3 +78,10 @@ def test_voicing_moves_smoothly():
     nxt = voice(f, first)
     # C -> F keeps the common tone C and moves the others by a step or less.
     assert sum(min(abs(n - p) for p in first) for n in nxt) <= 4
+
+
+def test_wide_chords_still_get_a_voicing():
+    # Bb D Ab G Db: no close stack fits the range, so the fallback places each note.
+    notes = voice([10, 2, 8, 7, 1], [55, 59, 62, 72, 76])
+    assert sorted(n % 12 for n in notes) == sorted([10, 2, 8, 7, 1])
+    assert all(CHORD_LOW <= n <= CHORD_HIGH for n in notes)

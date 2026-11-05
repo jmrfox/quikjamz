@@ -77,6 +77,11 @@ def render_text(jam: Jam, style: str = "plain", width: int = 72) -> str:
             parts.append(cue)
         parts.append(f"last pass {ending}")
         lines.append("  " + " · ".join(parts))
+        extras = list(s.prompts)
+        if s.idea:
+            extras.append(f"{s.idea['type']} idea: {s.idea['text']}")
+        if extras:
+            lines.append("  » " + " · ".join(extras))
         lines.append("")
 
     lines.append(f"seed {jam.seed} · mood {jam.mood} · arc {jam.arc} · form {jam.form}".rjust(width))

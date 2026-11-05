@@ -92,6 +92,11 @@ def _voicing_cost(v: list[int], previous: list[int] | None) -> float:
 def voice(pcs: list[int], previous: list[int] | None) -> list[int]:
     """Pick the inversion that moves least from the previous chord and stays mid-register."""
     candidates = _candidate_voicings(pcs)
+    if not candidates:
+        # Wide chords that don't fit any close stack: put each note nearest the middle.
+        notes = sorted({min(range(CHORD_LOW, CHORD_HIGH + 1),
+                            key=lambda n: (n % 12 != pc, abs(n - VOICING_CENTER))) for pc in pcs})
+        return notes
     return min(candidates, key=lambda v: (_voicing_cost(v, previous), v))
 
 

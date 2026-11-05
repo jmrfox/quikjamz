@@ -1,7 +1,7 @@
 """quikjamz: generate a jam guide.
 
     quikjamz --mood mysterious --harm-adv 0.7 --arc build --key D --mode dorian \\
-             --sections 5 --labels motion --seed 42 --midi out/jam.mid
+             --sections 5 --labels motion --seed 42 --pdf out/jam.pdf --midi out/jam.mid
 """
 
 from __future__ import annotations
@@ -39,6 +39,8 @@ def build_parser() -> argparse.ArgumentParser:
     out = p.add_argument_group("output")
     out.add_argument("--midi", metavar="PATH", help="write the jam to one .mid file")
     out.add_argument("--no-click", action="store_true", help="leave the click track out of the MIDI")
+    out.add_argument("--pdf", metavar="PATH", help="write the jam sheet as a PDF")
+    out.add_argument("--paper", choices=["letter", "a4"], default="letter", help="PDF paper size")
     out.add_argument("--json", metavar="PATH", help="write the jam plan as JSON")
     return p
 
@@ -71,6 +73,11 @@ def main(argv: list[str] | None = None) -> int:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(jam.to_dict(args.style), indent=2, ensure_ascii=False), encoding="utf-8")
         print(f"\nJSON written to {path}")
+    if args.pdf:
+        from .render.sheet import render_pdf
+
+        path = render_pdf(jam, args.pdf, style=args.style, paper=args.paper)
+        print(f"\nPDF written to {path}")
     if args.midi:
         from .render.midi import jam_to_midi
 

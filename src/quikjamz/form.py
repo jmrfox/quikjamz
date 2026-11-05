@@ -215,7 +215,7 @@ def make_cue(
         if knobs.energy < 0.45:
             return Cue("fade", "thin out to nothing", 2)
         text = "end on a held chord" if ending == "resolve" and rng.random() < 0.6 else "stop together on 1"
-        return Cue("hit", text, max(1, 8 // loop_bars))
+        return Cue("hit", text, max(2, 8 // loop_bars))
 
     weights = {
         "count": 0.3 + s,
@@ -225,7 +225,7 @@ def make_cue(
     kind = rng.choices(list(weights), weights=list(weights.values()))[0]
     if kind == "count":
         target_bars = rng.choice((8, 16) if s > 0.5 else (8, 8, 16))
-        passes = max(1, target_bars // loop_bars)
+        passes = max(2, target_bars // loop_bars)  # a loop always comes round at least twice
         return Cue("count", f"×{passes}", passes)
     if kind == "open":
         return Cue("open", "open – until cue", 2)

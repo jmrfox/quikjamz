@@ -13,19 +13,22 @@ Being rebuilt from scratch (v0.2).
 | Harmony engine (modes, chord vocabulary tiers, loop generation, colour, key changes) | ✅ working |
 | Knobs, moods, arcs; sections, form, labels, cues; meter | ✅ working |
 | Band, roles, parts | not started |
-| Prompts | not started |
-| Typst sheet renderer | not started |
+| Prompts and seed ideas (rhythm / melody) | ✅ working |
+| PDF sheet (Typst), Letter or A4 | ✅ working |
 | MIDI export (one `.mid`: chords, bass, click tracks) | ✅ working |
-| `quikjamz` CLI (text chart, JSON, MIDI) | ✅ working (no band/parts options yet) |
+| `quikjamz` CLI (text chart, PDF, JSON, MIDI) | ✅ working (no band/parts options yet) |
 
 ## Generate a jam
 
 ```bash
 uv sync
-uv run quikjamz --title "Tuesday" --mood mysterious --key D --mode dorian --seed 42 --midi out/jam.mid
+uv run quikjamz --title "Tuesday" --mood mysterious --key D --mode dorian --seed 42 --pdf out/jam.pdf --midi out/jam.mid
 ```
 
-This prints a text chart: a header, an energy curve, the road map, then each section with numbered bars, vibe words, cue and ending. `--midi` writes the whole jam to one `.mid` file, with each section repeated as its cue says. `--json` writes the jam plan.
+This prints a text chart. You can also write:
+- `--pdf` (with `--paper letter|a4`): the one-page jam sheet. It has a header (title, tempo, time, key), a road map with an energy curve, and for each section a label, numbered bars of chords, vibe words, cue, ending, prompts and an optional rhythm or melody idea.
+- `--midi`: the whole jam in one `.mid` file, with each section repeated as its cue says.
+- `--json`: the jam plan.
 
 Options:
 - **Starting point:** `--mood` (calm, happy, sad, energetic, dark, mysterious, triumphant, dreamy, chaotic, hypnotic).

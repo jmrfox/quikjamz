@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from .form import Cue, Slot, choose_form, make_cue, make_labels, make_start_cue
 from .harmony.modulation import maybe_modulate
 from .harmony.progression import Loop, generate_loop, reend_loop, vary_loop
+from .prompts import pick_idea, pick_prompts
 from .knobs import DEFAULT_ARC, Arc, Knobs, resolve_knobs, section_knobs, vibe_words
 from .theory.meter import Meter, changes_meter_between_sections, choose_meter
 from .theory.scales import Key, choose_mode, get_scale, make_key
@@ -47,6 +48,8 @@ class Section:
     start_cue: str | None = None
     key_change: str | None = None  # how the key moved into this section, if it did
     start_bar: int = 1  # bar number where the section starts (counting each loop pass once)
+    prompts: list[str] = field(default_factory=list)
+    idea: dict | None = None  # {"type": "rhythm" | "melody", "text": ...}
 
     @property
     def vibe(self) -> list[str]:
@@ -119,6 +122,8 @@ class Jam:
                     },
                     "cue": s.cue.to_dict(),
                     "start_cue": s.start_cue,
+                    "prompts": s.prompts,
+                    "idea": s.idea,
                 }
                 for s in self.sections
             ],
@@ -158,6 +163,7 @@ def generate_jam(config: JamConfig) -> Jam:
     sections: list[Section] = []
     key, sec_meter = home_key, meter
     bar = 1
+    used_prompts: set[str] = set()
     for i, (slot, sk) in enumerate(zip(slots, per_section)):
         key_change = None
         is_last = i == n - 1
@@ -183,10 +189,16 @@ def generate_jam(config: JamConfig) -> Jam:
             )
         cue = make_cue(sk, loop.bars, is_last, loop.ending, rng)
         start_cue = make_start_cue(sk, rng) if i == 0 else None
+        prompts = pick_prompts(sk, rng, used_prompts)
+        if slot.kind == "return":
+            idea = sections[slot.source].idea  # returns keep the idea, so they're recognisable
+        else:
+            idea = pick_idea(key, sec_meter, sk, rng)
         sections.append(
             Section(
                 index=i, label=labels[i], slot=slot, knobs=sk, key=key, meter=sec_meter,
                 loop=loop, cue=cue, start_cue=start_cue, key_change=key_change, start_bar=bar,
+                prompts=prompts, idea=idea,
             )
         )
         bar += loop.bars

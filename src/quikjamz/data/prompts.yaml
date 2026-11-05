@@ -1,0 +1,73 @@
+# Improvisation prompts (spec section 6). Each fits the knob ranges in `when`;
+# knobs not listed fit anything. `weight` defaults to 1. Write them so they work for
+# any instrument and never name a pop section.
+
+- text: "Only three notes. Make them count."
+  when: {density: [0.0, 0.45]}
+- text: "Leave the downbeat empty."
+  when: {rhythm_adv: [0.3, 1.0]}
+- text: "Call and response: answer whoever played last."
+  when: {complexity: [0.3, 1.0]}
+- text: "Drop into half-time for a pass."
+  when: {energy: [0.3, 0.75], rhythm_adv: [0.3, 1.0]}
+- text: "Push into double-time for a pass, then pull back."
+  when: {energy: [0.6, 1.0], rhythm_adv: [0.4, 1.0]}
+- text: "Displace the groove by an eighth."
+  when: {rhythm_adv: [0.6, 1.0]}
+- text: "Play a figure in 3 against the beat."
+  when: {rhythm_adv: [0.65, 1.0], density: [0.4, 1.0]}
+- text: "Two bars of silence somewhere. Your choice."
+  when: {density: [0.0, 0.6]}
+- text: "Imitate the last thing you heard, then bend it."
+- text: "Long tones only."
+  when: {energy: [0.0, 0.5], density: [0.0, 0.5]}
+- text: "Everyone plays softer than they think they should."
+  when: {energy: [0.0, 0.45]}
+- text: "Build one idea for the whole section. Don't abandon it."
+  when: {complexity: [0.0, 0.55]}
+- text: "Stay low in your range."
+  when: {brightness: [0.0, 0.4]}
+- text: "Stay high in your range."
+  when: {brightness: [0.6, 1.0]}
+- text: "Lean on the note that makes the chord sour."
+  when: {tension: [0.6, 1.0]}
+- text: "Resolve every phrase. No loose ends."
+  when: {tension: [0.0, 0.35]}
+- text: "End your phrases on a question."
+  when: {tension: [0.5, 1.0]}
+- text: "Repeat a short riff until it changes on its own."
+  when: {stability: [0.5, 1.0]}
+- text: "Trade lines, short and quick."
+  when: {energy: [0.5, 1.0], density: [0.5, 1.0]}
+- text: "Let one player hold everything up; the rest decorate."
+  when: {density: [0.0, 0.55]}
+- text: "Thicken it: everybody adds one more note."
+  when: {energy: [0.55, 1.0], complexity: [0.4, 1.0]}
+- text: "Strip it back to the pulse and one other voice."
+  when: {energy: [0.0, 0.55]}
+- text: "Swell together from nothing to loud and back."
+  when: {energy: [0.3, 0.8]}
+- text: "Play around the chord tones, never on them."
+  when: {complexity: [0.55, 1.0], harm_adv: [0.4, 1.0]}
+- text: "Sit on one note and change only the rhythm."
+  when: {complexity: [0.0, 0.5]}
+- text: "Accent the offbeats."
+  when: {rhythm_adv: [0.4, 1.0], energy: [0.4, 1.0]}
+- text: "Follow the grouping out loud: feel every long beat."
+  when: {rhythm_adv: [0.55, 1.0]}
+- text: "Wide intervals only, no steps."
+  when: {harm_adv: [0.5, 1.0]}
+- text: "Make it sound like a different key for two bars."
+  when: {harm_adv: [0.7, 1.0], tension: [0.5, 1.0]}
+- text: "Noises count: scrapes, breaths, taps."
+  when: {harm_adv: [0.6, 1.0], energy: [0.0, 0.6]}
+- text: "Let the busiest player rest; someone else takes over."
+  when: {density: [0.6, 1.0]}
+- text: "Hold back. Save the peak for later."
+  when: {energy: [0.4, 0.7], tension: [0.4, 1.0]}
+- text: "This is the peak. Nothing held back."
+  when: {energy: [0.8, 1.0]}
+- text: "Smile at someone and play what that sounds like."
+  when: {brightness: [0.6, 1.0], tension: [0.0, 0.5]}
+- text: "Stop together on a beat nobody expects."
+  when: {rhythm_adv: [0.5, 1.0], stability: [0.0, 0.6]}

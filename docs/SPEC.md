@@ -405,9 +405,9 @@ The **"any instrument"** part is always available and always printed when parts 
   - text: "Displace the groove by an eighth."
     when: { rhythm_adv: [0.6, 1] }
   ```
-- Each section gets 0–2 prompts. More complexity means more likely to get one.
+- Each section gets 0–2 prompts. More complexity means more likely to get one. No prompt repeats within a jam, and a returning section gets fresh prompts.
 - Half-time and double-time exist **only** as prompts like these.
-- **Seed ideas** (optional): one short rhythm (written in a text form like `x.x. ..x. x..x ....`) and/or a 3–5 note melodic idea in scale degrees. Both are given as starting ideas, not as material that must be played. Higher `rhythm_adv` makes the rhythm more syncopated.
+- **Seed ideas** (optional): one short rhythm (written in a text form like `x.x. ..x. x..x ....`) and/or a 3–5 note melodic idea in scale degrees. Both are given as starting ideas, not as material that must be played. Higher `rhythm_adv` makes the rhythm more syncopated. *As built:* about 60% of new sections get one idea, either a rhythm or a melody, chosen by `rhythm_adv` vs `harm_adv`. A returning section keeps its original's idea; a drift section gets a new one.
 
 ---
 
@@ -481,6 +481,14 @@ The goal is **one page per sheet** for a normal-length jam (up to ~8 sections), 
 - **Part sheets** are the same, with that instrument's line in place of the general prompt line.
 - **Typography:** a clean sans for text, and a chord font with good ♭/♯/Δ/ø glyphs.
 - **Paper size:** Letter and A4.
+
+*As built (v0.2):*
+- **Section labels** sit in a left column, sized to fit the longest label, with the count cue (`×4`) under the label.
+- **Bars** run 8 to a row at a fixed width, so a section's length on the page shows how long it is. Each bar has a tiny bar number in its top-left corner, and a held bar shows a faint `%`.
+- **Text lines:** line 1 is the key or meter change, return or drift note (in the accent colour), then vibe words, the cue and the last-pass ending. Line 2 is the prompts plus any seed idea.
+- **Seed ideas:** rhythm ideas print as ● (hit) and · (rest), grouped by beat or by the meter's grouping.
+- **Accidentals** are real ♭ and ♯ throughout.
+- **Fit:** 40 random six-section jams all fit on one Letter page.
 
 **Rendering:** **Typst**, through the `typst` Python package, so no separate binary is needed. A Typst template reads the JamPlan JSON and lays out the sheet. Each part sheet is the same template with a different `part` input.
 
