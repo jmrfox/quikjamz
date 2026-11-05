@@ -15,7 +15,7 @@ Being rebuilt from scratch (v0.2).
 | Band, roles, parts | not started |
 | Prompts | not started |
 | Typst sheet renderer | not started |
-| MIDI preview | not started |
+| MIDI export (one `.mid`: chords, bass, click tracks) | ✅ working |
 | `quikjamz` CLI | not started |
 
 ## Try the harmony engine
@@ -33,6 +33,22 @@ Useful flags:
 - `--seed`
 
 `-v` shows each chord's Roman numeral, tier and function, plus the loop's surprise score.
+
+### MIDI
+
+Add `--midi PATH` to write every printed loop, one after another, into a single `.mid` file you can load into a DAW:
+
+```bash
+uv run python -m quikjamz.harmony --mode dorian --count 6 --tempo 96 --midi out/loops.mid
+```
+
+- **Tracks:** `chords` (block chords voiced to move smoothly, Electric Piano), `bass` (the roots, Finger Bass) and `click` (GM drums, accent on beat 1).
+- **Layout:** each loop plays `--passes` times (default 2), then its ending chord for a bar, then a bar of rest.
+- **Options:**
+  - `--no-click` leaves out the click track.
+  - `--beat-unit 8` together with `--beats 7` gives 7/8, with `--tempo` counted in eighth notes.
+
+`out/` is git-ignored.
 
 ## Tests
 

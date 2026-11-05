@@ -413,7 +413,12 @@ Config ──► resolve knobs (mood + overrides) ──► form ──► per-s
 
 **JamPlan** is a plain, serializable object. It is the single source of truth: the renderers never make musical decisions. This also allows saving a jam, "lock and reroll," and more renderers (HTML, text) later.
 
-**MIDI preview (v1):** one `.mid` file per jam at the jam's tempo and meter. It has a block-chord track for each loop (repeated as the cues say; open sections play 2 passes) and a bass track playing chord roots. It's for tuning the generator by ear and for hearing a jam before playing it. Library: `mido` or `pretty_midi`.
+**MIDI export (v1):** exactly **one `.mid` file** per run, made to be loaded into other software such as a DAW. It is written at the jam's tempo and meter and has separate tracks:
+- **chords:** block chords held for each chord's length. The voicing is chosen from inversions and drop-2 shapes to move as little as possible, pulled toward E4.
+- **bass:** chord roots, or the slash-chord bass.
+- **click:** optional; on the GM drum channel, with an accent on beat 1.
+
+Sections play in order, each repeated as its cue says (an open section plays 2 passes). It's for tuning the generator by ear and for hearing a jam before playing it. Library: `mido`. *Built in v0.2 for the harmony demo; it will take a JamPlan once sections exist.*
 
 ```jsonc
 {
