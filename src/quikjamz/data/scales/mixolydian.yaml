@@ -1,0 +1,8 @@
+name: mixolydian
+display: Mixolydian
+intervals: [0, 2, 4, 5, 7, 9, 10]
+brightness: 0.67
+signature_offset: 1
+choose_weight: 1.0
+tier0: [1, 4, 7]
+functions: {1: H, 2: A, 3: A, 4: A, 5: P, 6: A, 7: P}

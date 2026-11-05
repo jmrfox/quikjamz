@@ -1,0 +1,8 @@
+name: lydian
+display: Lydian
+intervals: [0, 2, 4, 6, 7, 9, 11]
+brightness: 1.0
+signature_offset: -1
+choose_weight: 1.0
+tier0: [1, 2, 5]
+functions: {1: H, 2: P, 3: A, 4: A, 5: A, 6: A, 7: P}

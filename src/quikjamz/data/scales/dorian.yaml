@@ -1,0 +1,9 @@
+name: dorian
+display: Dorian
+intervals: [0, 2, 3, 5, 7, 9, 10]
+brightness: 0.5
+signature_offset: 2
+choose_weight: 1.0
+tier0: [1, 4, 7]
+# IV carries the raised 6th that makes Dorian Dorian, so it is the pull chord.
+functions: {1: H, 2: A, 3: A, 4: P, 5: A, 6: A, 7: P}

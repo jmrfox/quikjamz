@@ -1,0 +1,11 @@
+name: aeolian
+display: Aeolian
+intervals: [0, 2, 3, 5, 7, 8, 10]
+brightness: 0.33
+signature_offset: 3
+choose_weight: 1.0
+tier0: [1, 4, 7]
+functions: {1: H, 2: A, 3: H, 4: A, 5: P, 6: A, 7: P}
+# Chords outside the scale that are so common they count as part of it.
+extras:
+  - {degree: 5, alteration: 0, triad: maj, fn: P, tier: 1, color: [0, 1, 4, 5, 7, 8, 10]}

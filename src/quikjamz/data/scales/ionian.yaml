@@ -1,0 +1,9 @@
+# Ionian (major). Functions per scale step: H home, A away, P pull.
+name: ionian
+display: Ionian
+intervals: [0, 2, 4, 5, 7, 9, 11]
+brightness: 0.83
+signature_offset: 0     # fifths from the parent major key
+choose_weight: 1.0
+tier0: [1, 4, 5]
+functions: {1: H, 2: A, 3: H, 4: A, 5: P, 6: H, 7: P}
